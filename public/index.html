@@ -97,6 +97,7 @@ header{
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fc{grid-column:1/-1}
 .fl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5;cursor:pointer}
 input,select{
   width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);
   padding:9px 12px;font-size:13px;font-family:var(--font);color:var(--text);
@@ -360,13 +361,17 @@ select option{background:var(--surface3)}
             <option value="vatsal">🧑 Vatsal</option>
           </select>
         </div>
-        <div class="fc">
+        <div>
           <label class="fl">Split</label>
           <select id="fSplit">
             <option value="equal">÷ Split equally (50/50)</option>
             <option value="dev">Only Dev owes</option>
             <option value="vatsal">Only Vatsal owes</option>
           </select>
+        </div>
+        <div>
+          <label class="fl">Date</label>
+          <input id="fDate" type="date">
         </div>
         <div class="fc">
           <label class="fl">Payment Mode</label>
@@ -511,12 +516,14 @@ async function addExpense(){
   const payer=document.getElementById('fPayer').value;
   const split=document.getElementById('fSplit').value;
   const mode=selModeVal;
+  const date=document.getElementById('fDate').value || new Date().toISOString().slice(0,10);
   if(!desc||!amt||amt<=0){toast('⚠️ Fill in description and amount');shakeForm();return;}
-  const exp={desc,amt,cat,payer,split,mode,date:new Date().toISOString().slice(0,10)};
+  const exp={desc,amt,cat,payer,split,mode,date};
   await fetch('/api/expenses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monthKey:key(),expense:exp})});
   db=await(await fetch('/api/expenses')).json();
   document.getElementById('fDesc').value='';
   document.getElementById('fAmt').value='';
+  document.getElementById('fDate').value=new Date().toISOString().slice(0,10);
   spawnConfetti();
   toast('✅ Expense added!');
   render();
@@ -741,6 +748,8 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+// Set default date to today
+document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
 loadAll();
 connectWS();
 </script>
